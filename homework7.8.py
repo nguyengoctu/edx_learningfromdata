@@ -1,7 +1,6 @@
 from random import randint, uniform
 from matplotlib import pyplot as plt
 from scipy import optimize
-from sklearn import svm
 import numpy as np
 import sys
 
@@ -55,22 +54,28 @@ def SVM(x, y, n):
     def func(alpha):    
         return 0.5 * np.dot(np.dot(alpha, H), alpha) + np.dot(I, alpha)
 
-    def con(alpha):
+        def con1(alpha):
         return np.dot(alpha, y)
 
-    cons = {'type': 'eq', 'fun': con}
+    def con2(alpha):
+        identity = np.identity(n)
+        return np.dot(alpha, identity)
+
+    cons = [{'type': 'eq', 'fun': con1},
+            {'type': 'ineq', 'fun': con2}]
 
     w = np.zeros(3)
     alpha = optimize.minimize(func, np.zeros(n), constraints=cons)['x']
     # print(alpha)
     for i in range(n):
-        if alpha[i] > 0:
+        if alpha[i] > 1e-5:
             w += y[i] * alpha[i] * x[i]
 
     w[0] = 0.
     for i in range(n):
-        if alpha[i] > 0:
+        if alpha[i] > 1e-5:
             w[0] = 1 / y[i] - np.dot(w, x[i])
+
             break
     return w
     
@@ -137,13 +142,8 @@ for test in range(1000):
     clf = svm.SVC(C=sys.maxsize, kernel='linear')
     clf.fit(x, y)
 
-    g_SVM = np.zeros(3)
-    g_SVM[1] = clf.coef_[0][1]
-    g_SVM[2] = clf.coef_[0][2]
-    g_SVM[0] = clf.intercept_[0]
-    support_vectors += len(clf.support_vectors_[:, 1])
-    # w = SVM(x, y, n)
-    # plt.plot(a, (-g_SVM[0] - g_SVM[1] * a) / g_SVM[2], color='green')
+    g_SVM = SVM(x, y, n)
+    plt.plot(a, (-g_SVM[0] - g_SVM[1] * a) / g_SVM[2], color='green')
 
     x_out = generate_points(1000)
     y_out = calculate_sign(x_out, f)
@@ -157,8 +157,6 @@ for test in range(1000):
     # print("E_out_SVM: ", accuracy(y_out, y_SVM))
     # print("E_out_PLA: ", accuracy(y_out, y_PLA))
     print("Test", test, " is done")
-    print("There is ", len(clf.support_vectors_[:, 1]), " support vectors")
     print()
 # plt.show()
 print(count * 100 / 1000)
-print("Avg support vectors: ", support_vectors / 1000)
