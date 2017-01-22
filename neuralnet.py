@@ -2,25 +2,23 @@ import numpy as np
 
 
 class NeuralNetwork:
-    def __init__(self, sizes):
-        # Seed the random number generator, so it generates the same numbers
-        # every time the program runs.
-        # np.random.seed(1)
-
-        # We model a single neuron, with 3 input connections and 1 output connection.
-        # We assign random weights to a 3 x 1 matrix, with values in the range -1 to 1
-        # and mean 0.
+        def __init__(self, sizes):
+        # Sizes: sizes of neural net
+        # Ex: [2, 3, 1]: it has 3 layers, input layer has 2
         self.sizes = sizes
-        self.biases = []
+        self.biases = [] # biases[i]: biases of layer i + 1
+        self.x = [] # output of layer i + 1
+        self.signal = [] # signal of layer i + 1
 
-        # Biases (biases[i]: biases of layer i + 1)
         for i in range(1, len(sizes)):
-            self.synaptic_biases.append(np.random.randn(sizes[i], 1)) # Biases vectors
+            self.biases.append(np.random.randn(sizes[i], 1))
+            self.x.append(np.zeros((sizes[i], 1)))
+            self.signal.append(np.zeros((sizes[i], 1)))
 
         # Weight (Weights[i][a][b]: weights of element [b] of layer i to element [a] of layer[i + 1])
-        self.synaptic_weights = []
+        self.weights = []
         for i in range(len(sizes) - 1):
-            self.synaptic_weights.append(np.random.randn(sizes[i + 1], sizes[i]))
+            self.weights.append(np.random.randn(sizes[i + 1], sizes[i]))
 
     # The Sigmoid function, which describes an S shaped curve.
     # We pass the weighted sum of the inputs through this function to
