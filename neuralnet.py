@@ -1,36 +1,39 @@
+# reference: neural network - learning from data - Yaser Abu Mostafa
+# http://work.caltech.edu/slides/slides10.pdf
 import numpy as np
 
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+def sigmoid_derivative(x):
+    return sigmoid(x) * (1 - sigmoid(x))
+
+def tanh(x):
+    return (np.exp(x) - np.exp(-x)) / (np.exp(x) + np.exp(-x))
+
+def tanh_derivative(x):
+    return 1 - tanh(x) * tanh(x)
 
 class NeuralNetwork:
-        def __init__(self, sizes):
+    def __init__(self, sizes):
         # Sizes: sizes of neural net
-        # Ex: [2, 3, 1]: it has 3 layers, input layer has 2
+        # Ex: [2, 3, 1]: it has 3 layers, input layer has 2 features
         self.sizes = sizes
         self.biases = [] # biases[i]: biases of layer i + 1
         self.x = [] # output of layer i + 1
-        self.signal = [] # signal of layer i + 1
+        self.signals = [] # signal of layer i + 1
+        self.deltas = []
 
         for i in range(1, len(sizes)):
             self.biases.append(np.random.randn(sizes[i], 1))
             self.x.append(np.zeros((sizes[i], 1)))
-            self.signal.append(np.zeros((sizes[i], 1)))
+            self.signals.append(np.zeros((sizes[i], 1)))
+            self.deltas.append(np.zeros((sizes[i], 1)))
 
         # Weight (Weights[i][a][b]: weights of element [b] of layer i to element [a] of layer[i + 1])
         self.weights = []
         for i in range(len(sizes) - 1):
             self.weights.append(np.random.randn(sizes[i + 1], sizes[i]))
-
-    # The Sigmoid function, which describes an S shaped curve.
-    # We pass the weighted sum of the inputs through this function to
-    # normalise them between 0 and 1.
-    def __sigmoid(self, x):
-        return 1 / (1 + np.exp(-x))
-
-    # The derivative of the Sigmoid function.
-    # This is the gradient of the Sigmoid curve.
-    # It indicates how confident we are about the existing weight.
-    def __sigmoid_derivative(self, x):
-        return x * (1 - x)
 
     # We train the neural network through a process of trial and error.
     # Adjusting the synaptic weights each time.
@@ -51,33 +54,14 @@ class NeuralNetwork:
             # Adjust the weights.
             self.synaptic_weights += adjustment
 
-    # The neural network thinks.
-    # def think(self, inputs):
     def feed_forward(self, inputs):
-        # Pass inputs through our neural network (our single neuron).
-        return self.__sigmoid(np.dot(inputs, self.synaptic_weights))
+        self.signals[0] = np.dot(self.weights[0], inputs) + self.biases[0]
+        self.x[0] = sigmoid(self.signals[0])
+        for i in range(1, len(self.weights)):
+            self.signals[i] = np.dot(self.weights[i], self.x[i - 1]) + self.biases[i]
+            self.x[i] = sigmoid(self.signals[i])
+
 
 
 if __name__ == "__main__":
-
-    #Intialise a single neuron neural network.
-    neural_network = NeuralNetwork()
-
-    print("Random starting synaptic weights: ")
-    print(neural_network.synaptic_weights)
-
-    # The training set. We have 4 examples, each consisting of 3 input values
-    # and 1 output value.
-    training_set_inputs = np.array([[0, 0, 1], [1, 1, 1], [1, 0, 1], [0, 1, 1]])
-    training_set_outputs = np.array([[0, 1, 1, 0]]).T
-
-    # Train the neural network using a training set.
-    # Do it 10,000 times and make small adjustments each time.
-    neural_network.train(training_set_inputs, training_set_outputs, 10000)
-
-    print("New synaptic weights after training: ")
-    print(neural_network.synaptic_weights)
-
-    # Test the neural network with a new situation.
-    print("Considering new situation [1, 0, 0] -> ?: ")
-    print(neural_network.think(np.array([1, 0, 0])))
+    pass
