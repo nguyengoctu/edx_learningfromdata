@@ -35,24 +35,15 @@ class NeuralNetwork:
         for i in range(len(sizes) - 1):
             self.weights.append(np.random.randn(sizes[i + 1], sizes[i]))
 
-    # We train the neural network through a process of trial and error.
-    # Adjusting the synaptic weights each time.
-    def train(self, training_set_inputs, training_set_outputs, number_of_training_iterations):
-        for iteration in range(number_of_training_iterations):
-            # Pass the training set through our neural network (a single neuron).
-            output = self.feed_forward(training_set_inputs)
+    def stochastic_gradient_descent(self, train_data, test_data=None, epochs=100, learning_rate=0.1):
+        train_x, train_y = train_data
+        for epoch in range(epochs):
+            index = np.random.permutation(train_x.shape[0])
 
-            # Calculate the error (The difference between the desired output
-            # and the predicted output).
-            error = training_set_outputs - output
-
-            # Multiply the error by the input and again by the gradient of the Sigmoid curve.
-            # This means less confident weights are adjusted more.
-            # This means inputs, which are zero, do not cause changes to the weights.
-            adjustment = np.dot(training_set_inputs.T, error * self.__sigmoid_derivative(output))
-
-            # Adjust the weights.
-            self.synaptic_weights += adjustment
+            # sgd
+            for i in index:
+                self.feed_forward(train_x[i])
+                
 
     def feed_forward(self, inputs):
         self.signals[0] = np.dot(self.weights[0], inputs) + self.biases[0]
